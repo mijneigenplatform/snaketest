@@ -277,6 +277,7 @@ button:disabled {
 }
 
 .ad-banner-vertical {
+  width: 320px;
   min-height: 540px;
   padding: 20px;
   background: var(--ad-bg);
@@ -398,3 +399,5 @@ button:disabled {
     justify-items: start;
   }
 }
+
+
