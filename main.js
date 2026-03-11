@@ -33,39 +33,56 @@ const leaderboardListElement = document.querySelector("#leaderboard-list");
 const startButton = document.querySelector("#start-button");
 const pauseButton = document.querySelector("#pause-button");
 const restartButton = document.querySelector("#restart-button");
-const renameButton = document.querySelector("#rename-button");
 const controlButtons = document.querySelectorAll("[data-direction]");
 
 let gameState = createInitialState();
-let playerName = ensurePlayerName();
+let playerName = null;
 let tickHandle = null;
 let hasSavedCurrentScore = false;
 
 const leaderboardStore = isRemoteLeaderboardEnabled ? createRemoteLeaderboardStore(remoteConfig) : createLocalLeaderboardStore();
 
-function ensurePlayerName() {
+function normalizePlayerName(value) {
+  return value.trim().toLocaleLowerCase("nl-NL");
+}
+
+async function ensurePlayerName() {
   const storedName = window.localStorage.getItem(PLAYER_NAME_KEY);
   if (storedName && storedName.trim()) {
     return storedName.trim();
   }
 
-  return promptForPlayerName();
+  const existingNames = await loadExistingNames();
+  return promptForUniquePlayerName(existingNames);
 }
 
-function promptForPlayerName() {
+async function loadExistingNames() {
+  const entries = await leaderboardStore.listScores();
+  return new Set(entries.map((entry) => normalizePlayerName(String(entry.name ?? ""))).filter(Boolean));
+}
+
+function promptForUniquePlayerName(existingNames) {
   let nextName = "";
 
   while (!nextName) {
-    const value = window.prompt("Vul je naam in voor het leaderboard:", "Speler");
+    const value = window.prompt("Kies een unieke spelersnaam. Dit kan maar 1 keer.", "Speler");
     if (value === null) {
-      nextName = "Speler";
-      break;
+      continue;
     }
 
-    nextName = value.trim();
+    const candidate = value.trim().slice(0, REMOTE_NAME_MAX_LENGTH);
+    if (!candidate) {
+      continue;
+    }
+
+    if (existingNames.has(normalizePlayerName(candidate))) {
+      window.alert("Deze naam is al gebruikt. Kies een andere naam.");
+      continue;
+    }
+
+    nextName = candidate;
   }
 
-  nextName = nextName.slice(0, REMOTE_NAME_MAX_LENGTH);
   window.localStorage.setItem(PLAYER_NAME_KEY, nextName);
   return nextName;
 }
@@ -301,7 +318,7 @@ function renderBoard() {
   boardElement.innerHTML = cells.join("");
   scoreElement.textContent = String(gameState.score);
   stateElement.textContent = formatStatus(gameState.status);
-  playerNameElement.textContent = playerName;
+  playerNameElement.textContent = playerName ?? "-";
   pauseButton.disabled = gameState.status !== "running";
   startButton.disabled = gameState.status === "running";
 }
@@ -394,10 +411,6 @@ document.addEventListener("keydown", (event) => {
 startButton.addEventListener("click", beginGame);
 pauseButton.addEventListener("click", pauseCurrentGame);
 restartButton.addEventListener("click", restartCurrentGame);
-renameButton.addEventListener("click", () => {
-  playerName = promptForPlayerName();
-  renderBoard();
-});
 
 controlButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -405,5 +418,16 @@ controlButtons.forEach((button) => {
   });
 });
 
+async function initializeApp() {
+  try {
+    playerName = await ensurePlayerName();
+    renderBoard();
+    await refreshLeaderboard();
+  } catch (error) {
+    stateElement.textContent = "Naam fout";
+    leaderboardListElement.innerHTML = `<li class="leaderboard-error">${escapeHtml(error.message)}</li>`;
+  }
+}
+
 renderBoard();
-refreshLeaderboard();
+initializeApp();
