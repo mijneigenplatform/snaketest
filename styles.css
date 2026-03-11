@@ -137,7 +137,8 @@ button:disabled {
   opacity: 0.6;
 }
 
-.sidebar {
+.sidebar,
+.balance-spacer {
   width: 320px;
 }
 
@@ -210,12 +211,12 @@ button:disabled {
 
 @media (min-width: 960px) {
   .layout {
-    grid-template-columns: 320px 540px;
+    grid-template-columns: 320px 540px 320px;
     grid-template-areas:
-      ". status"
-      "sidebar board"
-      ". actions"
-      ". hint";
+      ". status ."
+      "sidebar board spacer"
+      ". actions ."
+      ". hint .";
     justify-content: center;
   }
 
@@ -229,6 +230,10 @@ button:disabled {
 
   .board {
     grid-area: board;
+  }
+
+  .balance-spacer {
+    grid-area: spacer;
   }
 
   .actions {
@@ -258,6 +263,10 @@ button:disabled {
   .hint,
   .status {
     width: 100%;
+  }
+
+  .balance-spacer {
+    display: none;
   }
 
   .leaderboard {
