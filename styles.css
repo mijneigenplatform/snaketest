@@ -36,7 +36,7 @@ body {
 }
 
 .page-shell {
-  width: min(100%, 1520px);
+  width: min(100%, 1620px);
   display: grid;
   gap: 22px;
   align-items: start;
@@ -45,6 +45,7 @@ body {
 .center-stack {
   display: grid;
   gap: 18px;
+  min-width: 0;
 }
 
 .layout {
@@ -262,6 +263,7 @@ button:disabled {
 
 .ad-rail {
   display: grid;
+  min-width: 0;
 }
 
 .ad-banner {
@@ -309,7 +311,7 @@ button:disabled {
 
 @media (min-width: 1280px) {
   .page-shell {
-    grid-template-columns: 220px 1fr 220px;
+    grid-template-columns: 320px 860px 320px;
     justify-content: center;
   }
 }
