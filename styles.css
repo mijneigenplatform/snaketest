@@ -219,8 +219,8 @@ button:disabled {
   }
 
   .sidebar {
-    padding-top: 116px;
-  }
+  align-self: start;
+}
 
   .leaderboard {
     min-height: 540px;
@@ -255,3 +255,4 @@ button:disabled {
     display: none;
   }
 }
+
