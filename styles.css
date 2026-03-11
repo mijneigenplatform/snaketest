@@ -92,8 +92,6 @@ body {
 .cell {
   border: 1px solid #efefef;
   background: #fafafa;
-  display: grid;
-  place-items: center;
 }
 
 .cell.snake {
@@ -112,10 +110,12 @@ body {
   background: #f3c644;
 }
 
-.bonus-icon {
-  font-size: 1rem;
-  line-height: 1;
-  color: #6f4d00;
+.cell.bonus-gold {
+  background: #f3c644;
+}
+
+.cell.bonus-blue {
+  background: #4c7dd9;
 }
 
 .actions,
