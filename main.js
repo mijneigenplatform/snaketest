@@ -1,6 +1,8 @@
 import {
   GRID_SIZE,
   TICK_MS,
+  BONUS_SCORE,
+  BONUS_FOOD_INTERVAL,
   createInitialState,
   pauseGame,
   restartGame,
@@ -282,16 +284,21 @@ function renderBoard() {
     for (let x = 0; x < GRID_SIZE; x += 1) {
       const key = `${x},${y}`;
       const classes = ["cell"];
+      let content = "";
+
       if (snakeMap.has(key)) {
         classes.push("snake");
         if (snakeMap.get(key) === 0) {
           classes.push("head");
         }
+      } else if (gameState.bonusFood && gameState.bonusFood.x === x && gameState.bonusFood.y === y) {
+        classes.push("bonus");
+        content = '<span class="bonus-icon" aria-hidden="true">&#9733;</span>';
       } else if (gameState.food && gameState.food.x === x && gameState.food.y === y) {
         classes.push("food");
       }
 
-      cells.push(`<div class="${classes.join(" ")}" role="gridcell" aria-label="${key}"></div>`);
+      cells.push(`<div class="${classes.join(" ")}" role="gridcell" aria-label="${key}">${content}</div>`);
     }
   }
 

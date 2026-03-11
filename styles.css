@@ -92,6 +92,8 @@ body {
 .cell {
   border: 1px solid #efefef;
   background: #fafafa;
+  display: grid;
+  place-items: center;
 }
 
 .cell.snake {
@@ -104,6 +106,16 @@ body {
 
 .cell.food {
   background: #b42318;
+}
+
+.cell.bonus {
+  background: #f3c644;
+}
+
+.bonus-icon {
+  font-size: 1rem;
+  line-height: 1;
+  color: #6f4d00;
 }
 
 .actions,
