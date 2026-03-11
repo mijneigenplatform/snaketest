@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Snake</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <section class="layout">
+        <aside class="sidebar">
+          <section class="leaderboard" aria-labelledby="leaderboard-title">
+            <div class="leaderboard-header">
+              <div>
+                <h2 id="leaderboard-title">Leaderboard</h2>
+                <p id="leaderboard-mode" class="leaderboard-mode">Lokale browser-opslag</p>
+              </div>
+            </div>
+            <ol id="leaderboard-list" class="leaderboard-list"></ol>
+          </section>
+        </aside>
+
+        <section class="panel">
+          <div class="status">
+            <div>
+              <h1>Snake</h1>
+              <p class="player-label">Speler: <span id="player-name">-</span></p>
+            </div>
+            <div class="stats">
+              <p>Score: <span id="score">0</span></p>
+              <p>Status: <span id="state">Ready</span></p>
+            </div>
+          </div>
+
+          <div id="board" class="board" aria-label="Snake game board" role="grid"></div>
+
+          <div class="actions">
+            <button id="start-button" type="button">Start</button>
+            <button id="pause-button" type="button">Pause</button>
+            <button id="restart-button" type="button">Restart</button>
+            <button id="rename-button" type="button">Naam wijzigen</button>
+          </div>
+
+          <div class="controls" aria-label="On-screen controls">
+            <button class="control" data-direction="up" type="button" aria-label="Move up">Up</button>
+            <div class="control-row">
+              <button class="control" data-direction="left" type="button" aria-label="Move left">Left</button>
+              <button class="control" data-direction="down" type="button" aria-label="Move down">Down</button>
+              <button class="control" data-direction="right" type="button" aria-label="Move right">Right</button>
+            </div>
+          </div>
+
+          <p class="hint">
+            Use arrow keys or WASD. Press Space to pause. Press Enter to restart after game over. Walls wrap to the other side.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script src="./config.js"></script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
