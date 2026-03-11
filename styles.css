@@ -17,13 +17,14 @@ body {
 }
 
 .layout {
-  width: min(100%, 860px);
+  width: min(100%, 1220px);
   display: grid;
   gap: 16px;
   align-items: start;
 }
 
-.sidebar {
+.sidebar,
+.balance-spacer {
   align-self: start;
 }
 
@@ -105,9 +106,14 @@ body {
   background: #b42318;
 }
 
-.actions {
+.actions,
+.controls,
+.hint {
   width: 540px;
   max-width: 100%;
+}
+
+.actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
@@ -130,7 +136,6 @@ button:disabled {
 
 .leaderboard {
   width: 320px;
-  min-height: 140px;
 }
 
 .leaderboard-header {
@@ -185,8 +190,6 @@ button:disabled {
 }
 
 .controls {
-  width: 540px;
-  max-width: 100%;
   display: grid;
   justify-items: center;
   gap: 8px;
@@ -197,19 +200,18 @@ button:disabled {
   gap: 8px;
 }
 
-.hint {
-  width: 540px;
-  max-width: 100%;
-}
-
 @media (min-width: 960px) {
   .layout {
-    grid-template-columns: 320px 540px;
+    grid-template-columns: 320px 540px 320px;
     justify-content: center;
   }
 
   .sidebar {
-    padding-top: 120px;
+    padding-top: 116px;
+  }
+
+  .leaderboard {
+    min-height: 540px;
   }
 }
 
@@ -219,12 +221,20 @@ button:disabled {
     width: min(100%, 540px);
   }
 
+  .balance-spacer {
+    display: none;
+  }
+
   .leaderboard,
   .board,
   .actions,
   .controls,
   .hint {
     width: 100%;
+  }
+
+  .leaderboard {
+    min-height: auto;
   }
 }
 

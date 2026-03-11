@@ -107,6 +107,30 @@ function createLocalLeaderboardStore() {
   };
 }
 
+async function readSupabaseError(response, fallbackMessage) {
+  try {
+    const payload = await response.json();
+    if (typeof payload?.message === "string" && payload.message.trim()) {
+      return `${fallbackMessage} ${payload.message.trim()}`;
+    }
+
+    if (Array.isArray(payload) && payload[0]?.message) {
+      return `${fallbackMessage} ${String(payload[0].message).trim()}`;
+    }
+  } catch {
+    try {
+      const text = await response.text();
+      if (text.trim()) {
+        return `${fallbackMessage} ${text.trim()}`;
+      }
+    } catch {
+      return fallbackMessage;
+    }
+  }
+
+  return fallbackMessage;
+}
+
 function createRemoteLeaderboardStore(config) {
   const endpoint = `${config.supabaseUrl}/rest/v1/${config.leaderboardTable}`;
   const headers = {
@@ -124,7 +148,7 @@ function createRemoteLeaderboardStore(config) {
       });
 
       if (!response.ok) {
-        throw new Error("Kon online leaderboard niet laden.");
+        throw new Error(await readSupabaseError(response, "Kon online leaderboard niet laden."));
       }
 
       const rows = await response.json();
@@ -153,7 +177,7 @@ function createRemoteLeaderboardStore(config) {
       });
 
       if (!response.ok) {
-        throw new Error("Kon score niet online opslaan.");
+        throw new Error(await readSupabaseError(response, "Kon score niet online opslaan."));
       }
     }
   };

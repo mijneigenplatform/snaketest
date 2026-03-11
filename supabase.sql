@@ -7,6 +7,13 @@ create table if not exists public.snake_scores (
 
 alter table public.snake_scores enable row level security;
 
+grant usage on schema public to anon, authenticated;
+grant select, insert on public.snake_scores to anon, authenticated;
+grant usage, select on sequence public.snake_scores_id_seq to anon, authenticated;
+
+drop policy if exists "snake_scores_select" on public.snake_scores;
+drop policy if exists "snake_scores_insert" on public.snake_scores;
+
 create policy "snake_scores_select"
 on public.snake_scores
 for select
@@ -15,6 +22,7 @@ using (true);
 create policy "snake_scores_insert"
 on public.snake_scores
 for insert
+to anon, authenticated
 with check (
   char_length(trim(name)) between 1 and 24
   and score >= 0
