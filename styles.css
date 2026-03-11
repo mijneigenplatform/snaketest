@@ -23,17 +23,6 @@ body {
   align-items: start;
 }
 
-.sidebar,
-.balance-spacer {
-  align-self: start;
-}
-
-.panel {
-  width: 100%;
-  display: grid;
-  gap: 16px;
-}
-
 .status,
 .actions,
 .controls,
@@ -120,7 +109,9 @@ body {
 
 .actions,
 .controls,
-.hint {
+.hint,
+.status,
+.board {
   width: 540px;
   max-width: 100%;
 }
@@ -146,8 +137,13 @@ button:disabled {
   opacity: 0.6;
 }
 
+.sidebar {
+  width: 320px;
+}
+
 .leaderboard {
   width: 320px;
+  min-height: 540px;
 }
 
 .leaderboard-header {
@@ -214,16 +210,37 @@ button:disabled {
 
 @media (min-width: 960px) {
   .layout {
-    grid-template-columns: 320px 540px 320px;
+    grid-template-columns: 320px 540px;
+    grid-template-areas:
+      ". status"
+      "sidebar board"
+      ". actions"
+      ". hint";
     justify-content: center;
   }
 
   .sidebar {
-  align-self: start;
-}
+    grid-area: sidebar;
+  }
 
-  .leaderboard {
-    min-height: 540px;
+  .status {
+    grid-area: status;
+  }
+
+  .board {
+    grid-area: board;
+  }
+
+  .actions {
+    grid-area: actions;
+  }
+
+  .hint {
+    grid-area: hint;
+  }
+
+  .controls {
+    display: none;
   }
 }
 
@@ -233,15 +250,13 @@ button:disabled {
     width: min(100%, 540px);
   }
 
-  .balance-spacer {
-    display: none;
-  }
-
+  .sidebar,
   .leaderboard,
   .board,
   .actions,
   .controls,
-  .hint {
+  .hint,
+  .status {
     width: 100%;
   }
 
@@ -249,10 +264,3 @@ button:disabled {
     min-height: auto;
   }
 }
-
-@media (min-width: 768px) {
-  .controls {
-    display: none;
-  }
-}
-

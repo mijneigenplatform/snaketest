@@ -21,42 +21,38 @@
           </section>
         </aside>
 
-        <section class="panel">
-          <div class="status">
-            <div>
-              <h1>Snake</h1>
-              <p class="player-label">Speler: <span id="player-name">-</span></p>
-            </div>
-            <div class="stats">
-              <p>Score: <span id="score">0</span></p>
-              <p>Status: <span id="state">Ready</span></p>
-            </div>
+        <div class="status">
+          <div>
+            <h1>Snake</h1>
+            <p class="player-label">Speler: <span id="player-name">-</span></p>
           </div>
-
-          <div id="board" class="board" aria-label="Snake game board" role="grid"></div>
-
-          <div class="actions">
-            <button id="start-button" type="button">Start</button>
-            <button id="pause-button" type="button">Pause</button>
-            <button id="restart-button" type="button">Restart</button>
-            <button id="rename-button" type="button">Naam wijzigen</button>
+          <div class="stats">
+            <p>Score: <span id="score">0</span></p>
+            <p>Status: <span id="state">Ready</span></p>
           </div>
+        </div>
 
-          <div class="controls" aria-label="On-screen controls">
-            <button class="control" data-direction="up" type="button" aria-label="Move up">Up</button>
-            <div class="control-row">
-              <button class="control" data-direction="left" type="button" aria-label="Move left">Left</button>
-              <button class="control" data-direction="down" type="button" aria-label="Move down">Down</button>
-              <button class="control" data-direction="right" type="button" aria-label="Move right">Right</button>
-            </div>
+        <div id="board" class="board" aria-label="Snake game board" role="grid"></div>
+
+        <div class="actions">
+          <button id="start-button" type="button">Start</button>
+          <button id="pause-button" type="button">Pause</button>
+          <button id="restart-button" type="button">Restart</button>
+          <button id="rename-button" type="button">Naam wijzigen</button>
+        </div>
+
+        <div class="controls" aria-label="On-screen controls">
+          <button class="control" data-direction="up" type="button" aria-label="Move up">Up</button>
+          <div class="control-row">
+            <button class="control" data-direction="left" type="button" aria-label="Move left">Left</button>
+            <button class="control" data-direction="down" type="button" aria-label="Move down">Down</button>
+            <button class="control" data-direction="right" type="button" aria-label="Move right">Right</button>
           </div>
+        </div>
 
-          <p class="hint">
-            Use arrow keys or WASD. Press Space to pause. Press Enter to restart after game over. Walls wrap to the other side.
-          </p>
-        </section>
-
-        <div class="balance-spacer" aria-hidden="true"></div>
+        <p class="hint">
+          Use arrow keys or WASD. Press Space to pause. Press Enter to restart after game over. Walls wrap to the other side.
+        </p>
       </section>
     </main>
 
