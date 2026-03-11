@@ -36,20 +36,22 @@ body {
 }
 
 .page-shell {
-  width: min(100%, 1620px);
+  width: min(100%, 1864px);
   display: grid;
   gap: 22px;
   align-items: start;
 }
 
 .center-stack {
+  width: 1180px;
+  max-width: 100%;
   display: grid;
   gap: 18px;
-  min-width: 0;
 }
 
 .layout {
-  width: 100%;
+  width: 1180px;
+  max-width: 100%;
   display: grid;
   gap: 16px;
   align-items: start;
@@ -58,7 +60,7 @@ body {
 .status,
 .actions,
 .controls,
-.hint,
+.hint-card,
 .leaderboard {
   background: var(--panel-bg);
   border: 2px solid var(--panel-border);
@@ -153,10 +155,16 @@ body {
 
 .actions,
 .controls,
-.hint,
 .status,
 .board {
   width: 540px;
+  max-width: 100%;
+}
+
+.hint-card,
+.sidebar,
+.leaderboard {
+  width: 320px;
   max-width: 100%;
 }
 
@@ -189,14 +197,8 @@ button:disabled {
   box-shadow: none;
 }
 
-.sidebar,
-.balance-spacer,
-.ad-rail {
-  width: 320px;
-}
-
-.leaderboard {
-  width: 320px;
+.leaderboard,
+.hint-card {
   min-height: 540px;
 }
 
@@ -262,6 +264,7 @@ button:disabled {
 }
 
 .ad-rail {
+  width: 320px;
   display: grid;
   min-width: 0;
 }
@@ -311,7 +314,7 @@ button:disabled {
 
 @media (min-width: 1280px) {
   .page-shell {
-    grid-template-columns: 320px 860px 320px;
+    grid-template-columns: 320px 1180px 320px;
     justify-content: center;
   }
 }
@@ -332,9 +335,8 @@ button:disabled {
     grid-template-columns: 320px 540px 320px;
     grid-template-areas:
       ". status ."
-      "sidebar board spacer"
-      ". actions ."
-      ". hint .";
+      "sidebar board hint"
+      ". actions .";
     justify-content: center;
   }
 
@@ -350,16 +352,12 @@ button:disabled {
     grid-area: board;
   }
 
-  .balance-spacer {
-    grid-area: spacer;
+  .hint-card {
+    grid-area: hint;
   }
 
   .actions {
     grid-area: actions;
-  }
-
-  .hint {
-    grid-area: hint;
   }
 
   .controls {
@@ -369,6 +367,7 @@ button:disabled {
 
 @media (max-width: 959px) {
   .page-shell,
+  .center-stack,
   .layout {
     grid-template-columns: 1fr;
     width: min(100%, 540px);
@@ -379,18 +378,18 @@ button:disabled {
   .board,
   .actions,
   .controls,
-  .hint,
+  .hint-card,
   .status,
   .ad-banner-horizontal {
     width: 100%;
   }
 
-  .balance-spacer,
   .ad-rail {
     display: none;
   }
 
-  .leaderboard {
+  .leaderboard,
+  .hint-card {
     min-height: auto;
   }
 
