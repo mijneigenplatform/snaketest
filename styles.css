@@ -34,7 +34,7 @@ body {
 }
 
 .app {
-  min-height: 100vh;
+  min-height: calc(100vh - 76px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,7 +98,8 @@ body {
 .hint,
 .leaderboard-mode,
 .ad-label,
-.ad-banner p {
+.ad-banner p,
+.site-footer p {
   margin: 0;
 }
 
@@ -107,7 +108,8 @@ body {
 .hint,
 .ad-label,
 .ad-banner p,
-.leaderboard-date {
+.leaderboard-date,
+.site-footer {
   color: var(--muted-color);
 }
 
@@ -182,7 +184,8 @@ body {
 }
 
 button,
-.ad-cta {
+.ad-cta,
+.footer-links a {
   appearance: none;
   border: 2px solid var(--button-border);
   background: var(--button-bg);
@@ -329,6 +332,19 @@ button:disabled {
   gap: 6px;
 }
 
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 12px 20px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 10px;
+}
+
 @media (min-width: 1280px) {
   .page-shell {
     grid-template-columns: var(--side-width) calc((var(--side-width) * 2) + var(--board-width) + (var(--layout-gap) * 2)) var(--side-width);
@@ -378,6 +394,12 @@ button:disabled {
 }
 
 @media (max-width: 959px) {
+  .app {
+    min-height: auto;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
   .page-shell,
   .center-stack,
   .layout {
@@ -410,5 +432,8 @@ button:disabled {
     grid-template-columns: 1fr;
     justify-items: start;
   }
-}
 
+  .site-footer {
+    flex-direction: column;
+  }
+}
