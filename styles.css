@@ -276,19 +276,19 @@ body.menu-open .menu-links {
   opacity: 0.9;
 }
 
-.tank-head.direction-up .tank-sprite {
+.tank-cell.direction-up .tank-sprite {
   transform: rotate(-90deg);
 }
 
-.tank-head.direction-down .tank-sprite {
+.tank-cell.direction-down .tank-sprite {
   transform: rotate(90deg);
 }
 
-.tank-head.direction-left .tank-sprite {
+.tank-cell.direction-left .tank-sprite {
   transform: rotate(180deg);
 }
 
-.tank-head.direction-right .tank-sprite {
+.tank-cell.direction-right .tank-sprite {
   transform: rotate(0deg);
 }
 

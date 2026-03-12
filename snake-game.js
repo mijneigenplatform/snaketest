@@ -8,6 +8,7 @@ const BONUS_TYPES = [
   { kind: "gold", score: 5, lifetimeTicks: BONUS_LIFETIME_TICKS },
   { kind: "blue", score: 8, lifetimeTicks: BONUS_LIFETIME_TICKS }
 ];
+const PROJECTILE_SPEED = 3;
 
 const DIRECTION_VECTORS = {
   up: { x: 0, y: -1 },
@@ -165,62 +166,68 @@ function findTargetAtPosition(state, position) {
 }
 
 function advanceProjectile(state, rng) {
-  if (!state.projectile) {
-    return state;
-  }
+  let nextState = state;
 
-  const currentHit = findTargetAtPosition(state, state.projectile);
-  if (currentHit) {
-    const hitResult = applyTargetHit(state, state.snake, rng, {
-      ateFood: currentHit === "food",
-      ateBonusFood: currentHit === "bonus",
-      inherentGrowth: 0
-    });
-
-    return {
-      ...state,
-      ...hitResult,
-      projectile: null
-    };
-  }
-
-  const nextPosition = stepProjectilePosition(state.projectile, state.projectile.direction, state.gridSize);
-  if (!nextPosition) {
-    return {
-      ...state,
-      projectile: null
-    };
-  }
-
-  if (isSnakeOccupying(state.snake, nextPosition)) {
-    return {
-      ...state,
-      projectile: null
-    };
-  }
-
-  const nextHit = findTargetAtPosition(state, nextPosition);
-  if (nextHit) {
-    const hitResult = applyTargetHit(state, state.snake, rng, {
-      ateFood: nextHit === "food",
-      ateBonusFood: nextHit === "bonus",
-      inherentGrowth: 0
-    });
-
-    return {
-      ...state,
-      ...hitResult,
-      projectile: null
-    };
-  }
-
-  return {
-    ...state,
-    projectile: {
-      ...nextPosition,
-      direction: state.projectile.direction
+  for (let step = 0; step < PROJECTILE_SPEED; step += 1) {
+    if (!nextState.projectile) {
+      return nextState;
     }
-  };
+
+    const currentHit = findTargetAtPosition(nextState, nextState.projectile);
+    if (currentHit) {
+      const hitResult = applyTargetHit(nextState, nextState.snake, rng, {
+        ateFood: currentHit === "food",
+        ateBonusFood: currentHit === "bonus",
+        inherentGrowth: 0
+      });
+
+      return {
+        ...nextState,
+        ...hitResult,
+        projectile: null
+      };
+    }
+
+    const nextPosition = stepProjectilePosition(nextState.projectile, nextState.projectile.direction, nextState.gridSize);
+    if (!nextPosition) {
+      return {
+        ...nextState,
+        projectile: null
+      };
+    }
+
+    if (isSnakeOccupying(nextState.snake, nextPosition)) {
+      return {
+        ...nextState,
+        projectile: null
+      };
+    }
+
+    const nextHit = findTargetAtPosition(nextState, nextPosition);
+    if (nextHit) {
+      const hitResult = applyTargetHit(nextState, nextState.snake, rng, {
+        ateFood: nextHit === "food",
+        ateBonusFood: nextHit === "bonus",
+        inherentGrowth: 0
+      });
+
+      return {
+        ...nextState,
+        ...hitResult,
+        projectile: null
+      };
+    }
+
+    nextState = {
+      ...nextState,
+      projectile: {
+        ...nextPosition,
+        direction: nextState.projectile.direction
+      }
+    };
+  }
+
+  return nextState;
 }
 
 export function createInitialState(rng = Math.random, gridSize = GRID_SIZE) {

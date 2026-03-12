@@ -304,9 +304,9 @@ function renderBoard() {
       let content = "";
 
       if (snakeMap.has(key)) {
-        classes.push("tank-cell");
+        classes.push("tank-cell", `direction-${gameState.direction}`);
         if (snakeMap.get(key) === 0) {
-          classes.push("tank-head", `direction-${gameState.direction}`);
+          classes.push("tank-head");
         } else {
           classes.push("tank-body");
         }
