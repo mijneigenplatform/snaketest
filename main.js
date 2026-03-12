@@ -294,6 +294,7 @@ async function maybeRecordFinishedGame() {
 
 function renderBoard() {
   const snakeMap = new Map(gameState.snake.map((segment, index) => [`${segment.x},${segment.y}`, index]));
+  const projectileKey = gameState.projectile ? `${gameState.projectile.x},${gameState.projectile.y}` : null;
   const cells = [];
 
   for (let y = 0; y < GRID_SIZE; y += 1) {
@@ -306,11 +307,13 @@ function renderBoard() {
         classes.push("tank-cell");
         if (snakeMap.get(key) === 0) {
           classes.push("tank-head", `direction-${gameState.direction}`);
-          content = '<span class="tank-icon" aria-hidden="true">&#128737;</span>';
         } else {
           classes.push("tank-body");
-          content = '<span class="tank-icon" aria-hidden="true">&#128998;</span>';
         }
+        content = '<span class="tank-sprite" aria-hidden="true"></span>';
+      } else if (projectileKey === key) {
+        classes.push("projectile-cell");
+        content = '<span class="projectile-dot" aria-hidden="true"></span>';
       } else if (gameState.bonusFood && gameState.bonusFood.x === x && gameState.bonusFood.y === y) {
         classes.push("bonus", `bonus-${gameState.bonusFood.kind}`);
       } else if (gameState.food && gameState.food.x === x && gameState.food.y === y) {

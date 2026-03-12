@@ -34,6 +34,20 @@ function wrapPosition(position, gridSize) {
   };
 }
 
+function stepProjectilePosition(position, direction, gridSize) {
+  const vector = DIRECTION_VECTORS[direction];
+  const nextPosition = {
+    x: position.x + vector.x,
+    y: position.y + vector.y
+  };
+
+  if (nextPosition.x < 0 || nextPosition.x >= gridSize || nextPosition.y < 0 || nextPosition.y >= gridSize) {
+    return null;
+  }
+
+  return nextPosition;
+}
+
 function randomBonusInterval(rng = Math.random) {
   const span = BONUS_INTERVAL_MAX - BONUS_INTERVAL_MIN + 1;
   return BONUS_INTERVAL_MIN + Math.floor(rng() * span);
@@ -61,6 +75,23 @@ function getAllEmptyCells(snake, gridSize, blockedPositions = []) {
   return cells;
 }
 
+function extendSnake(snake, amount) {
+  if (amount <= 0 || snake.length === 0) {
+    return [...snake];
+  }
+
+  const tail = snake[snake.length - 1];
+  return [...snake, ...Array.from({ length: amount }, () => ({ ...tail }))];
+}
+
+function isSameCell(left, right) {
+  return Boolean(left && right && left.x === right.x && left.y === right.y);
+}
+
+function isSnakeOccupying(snake, position) {
+  return snake.some((segment) => segment.x === position.x && segment.y === position.y);
+}
+
 export function placeFood(snake, gridSize, rng = Math.random, blockedPositions = []) {
   const emptyCells = getAllEmptyCells(snake, gridSize, blockedPositions);
   if (emptyCells.length === 0) {
@@ -86,43 +117,31 @@ function placeBonusFood(snake, food, gridSize, rng = Math.random) {
   };
 }
 
-function extendSnake(snake, amount) {
-  if (amount <= 0 || snake.length === 0) {
-    return snake;
-  }
-
-  const nextSnake = [...snake];
-  const tail = snake[snake.length - 1];
-
-  for (let index = 0; index < amount; index += 1) {
-    nextSnake.push({ ...tail });
-  }
-
-  return nextSnake;
-}
-
-function createSpawnResult(state, snake, rng, options = {}) {
+function applyTargetHit(state, snake, rng, options = {}) {
   const ateFood = Boolean(options.ateFood);
   const ateBonusFood = Boolean(options.ateBonusFood && state.bonusFood);
+  const inherentGrowth = options.inherentGrowth ?? 0;
   const bonusScore = ateBonusFood ? state.bonusFood.score : 0;
-  const growthGain = (ateFood ? 1 : 0) + bonusScore;
-  const nextSnake = extendSnake(snake, Math.max(0, growthGain - (ateFood ? 1 : 0)));
+  const totalGrowth = (ateFood ? 1 : 0) + bonusScore;
+  const extraGrowth = Math.max(0, totalGrowth - inherentGrowth);
+  const grownSnake = extendSnake(snake, extraGrowth);
   const nextFoodsEaten = ateFood ? state.foodsEaten + 1 : state.foodsEaten;
   const nextScore = state.score + (ateFood ? 1 : 0) + bonusScore;
-  const nextFood = ateFood ? placeFood(nextSnake, state.gridSize, rng, [state.bonusFood]) : state.food;
+  const blockedForFood = [ateBonusFood ? null : state.bonusFood].filter(Boolean);
+  const nextFood = ateFood ? placeFood(grownSnake, state.gridSize, rng, blockedForFood) : state.food;
 
   let nextBonusFood = ateBonusFood ? null : state.bonusFood;
   let nextBonusExpiresAtTick = ateBonusFood ? null : state.bonusExpiresAtTick;
   let nextBonusAtFoodsEaten = state.nextBonusAtFoodsEaten;
 
   if (ateFood && nextFood !== null && nextFoodsEaten >= state.nextBonusAtFoodsEaten) {
-    nextBonusFood = placeBonusFood(nextSnake, nextFood, state.gridSize, rng);
+    nextBonusFood = placeBonusFood(grownSnake, nextFood, state.gridSize, rng);
     nextBonusExpiresAtTick = nextBonusFood ? state.tick + nextBonusFood.lifetimeTicks : null;
     nextBonusAtFoodsEaten = nextFoodsEaten + randomBonusInterval(rng);
   }
 
   return {
-    snake: nextSnake,
+    snake: grownSnake,
     food: nextFood,
     bonusFood: nextBonusFood,
     bonusExpiresAtTick: nextBonusExpiresAtTick,
@@ -133,34 +152,75 @@ function createSpawnResult(state, snake, rng, options = {}) {
   };
 }
 
-function findShotTarget(state) {
-  const head = state.snake[0];
-  const vector = DIRECTION_VECTORS[state.direction];
-  const candidates = [state.food, state.bonusFood].filter(Boolean).filter((target) => {
-    if (vector.x !== 0) {
-      if (target.y !== head.y) {
-        return false;
-      }
-      return vector.x > 0 ? target.x > head.x : target.x < head.x;
-    }
-
-    if (target.x !== head.x) {
-      return false;
-    }
-    return vector.y > 0 ? target.y > head.y : target.y < head.y;
-  });
-
-  if (candidates.length === 0) {
-    return null;
+function findTargetAtPosition(state, position) {
+  if (isSameCell(state.food, position)) {
+    return "food";
   }
 
-  candidates.sort((left, right) => {
-    const leftDistance = Math.abs(left.x - head.x) + Math.abs(left.y - head.y);
-    const rightDistance = Math.abs(right.x - head.x) + Math.abs(right.y - head.y);
-    return leftDistance - rightDistance;
-  });
+  if (isSameCell(state.bonusFood, position)) {
+    return "bonus";
+  }
 
-  return candidates[0];
+  return null;
+}
+
+function advanceProjectile(state, rng) {
+  if (!state.projectile) {
+    return state;
+  }
+
+  const currentHit = findTargetAtPosition(state, state.projectile);
+  if (currentHit) {
+    const hitResult = applyTargetHit(state, state.snake, rng, {
+      ateFood: currentHit === "food",
+      ateBonusFood: currentHit === "bonus",
+      inherentGrowth: 0
+    });
+
+    return {
+      ...state,
+      ...hitResult,
+      projectile: null
+    };
+  }
+
+  const nextPosition = stepProjectilePosition(state.projectile, state.projectile.direction, state.gridSize);
+  if (!nextPosition) {
+    return {
+      ...state,
+      projectile: null
+    };
+  }
+
+  if (isSnakeOccupying(state.snake, nextPosition)) {
+    return {
+      ...state,
+      projectile: null
+    };
+  }
+
+  const nextHit = findTargetAtPosition(state, nextPosition);
+  if (nextHit) {
+    const hitResult = applyTargetHit(state, state.snake, rng, {
+      ateFood: nextHit === "food",
+      ateBonusFood: nextHit === "bonus",
+      inherentGrowth: 0
+    });
+
+    return {
+      ...state,
+      ...hitResult,
+      projectile: null
+    };
+  }
+
+  return {
+    ...state,
+    projectile: {
+      ...nextPosition,
+      direction: state.projectile.direction
+    }
+  };
 }
 
 export function createInitialState(rng = Math.random, gridSize = GRID_SIZE) {
@@ -180,6 +240,7 @@ export function createInitialState(rng = Math.random, gridSize = GRID_SIZE) {
     food: placeFood(snake, gridSize, rng),
     bonusFood: null,
     bonusExpiresAtTick: null,
+    projectile: null,
     foodsEaten: 0,
     nextBonusAtFoodsEaten: randomBonusInterval(rng),
     tick: 0,
@@ -207,26 +268,22 @@ export function setDirection(state, nextDirection) {
   };
 }
 
-export function fireShot(state, rng = Math.random) {
-  if (state.status === "game-over" || state.status === "won") {
+export function fireShot(state) {
+  if (state.status === "game-over" || state.status === "won" || state.projectile) {
     return state;
   }
 
-  const target = findShotTarget(state);
-  if (!target) {
+  const nextPosition = stepProjectilePosition(state.snake[0], state.direction, state.gridSize);
+  if (!nextPosition || isSnakeOccupying(state.snake, nextPosition)) {
     return state;
   }
-
-  const ateFood = state.food && target.x === state.food.x && target.y === state.food.y;
-  const ateBonusFood = state.bonusFood && target.x === state.bonusFood.x && target.y === state.bonusFood.y;
-  const spawnResult = createSpawnResult(state, state.snake, rng, {
-    ateFood,
-    ateBonusFood
-  });
 
   return {
     ...state,
-    ...spawnResult
+    projectile: {
+      ...nextPosition,
+      direction: state.direction
+    }
   };
 }
 
@@ -240,60 +297,65 @@ export function stepGame(state, rng = Math.random) {
   const activeBonusFood = isBonusStillActive ? state.bonusFood : null;
   const activeBonusExpiresAtTick = isBonusStillActive ? state.bonusExpiresAtTick : null;
 
-  const direction = state.pendingDirection;
-  const vector = DIRECTION_VECTORS[direction];
-  const nextHead = wrapPosition({
-    x: state.snake[0].x + vector.x,
-    y: state.snake[0].y + vector.y
-  }, state.gridSize);
+  let nextState = {
+    ...state,
+    tick: nextTick,
+    bonusFood: activeBonusFood,
+    bonusExpiresAtTick: activeBonusExpiresAtTick
+  };
 
-  const willEatFood = state.food && nextHead.x === state.food.x && nextHead.y === state.food.y;
-  const willEatBonusFood = activeBonusFood && nextHead.x === activeBonusFood.x && nextHead.y === activeBonusFood.y;
-  const nextSnake = [nextHead, ...state.snake];
-
-  if (!willEatFood && !willEatBonusFood) {
-    nextSnake.pop();
+  nextState = advanceProjectile(nextState, rng);
+  if (nextState.status === "won") {
+    return nextState;
   }
 
-  const body = nextSnake.slice(1);
+  const direction = nextState.pendingDirection;
+  const vector = DIRECTION_VECTORS[direction];
+  const nextHead = wrapPosition({
+    x: nextState.snake[0].x + vector.x,
+    y: nextState.snake[0].y + vector.y
+  }, nextState.gridSize);
+
+  const willEatFood = isSameCell(nextState.food, nextHead);
+  const willEatBonusFood = isSameCell(nextState.bonusFood, nextHead);
+  const movedSnake = [nextHead, ...nextState.snake];
+
+  if (!willEatFood && !willEatBonusFood) {
+    movedSnake.pop();
+  }
+
+  const body = movedSnake.slice(1);
   const collidedWithSelf = body.some((segment) => segment.x === nextHead.x && segment.y === nextHead.y);
   if (collidedWithSelf) {
     return {
-      ...state,
-      snake: nextSnake,
+      ...nextState,
+      snake: movedSnake,
       direction,
-      tick: nextTick,
-      bonusFood: activeBonusFood,
-      bonusExpiresAtTick: activeBonusExpiresAtTick,
+      pendingDirection: direction,
       status: "game-over"
     };
   }
 
-  const nextStateSeed = {
-    ...state,
-    tick: nextTick,
-    bonusFood: activeBonusFood,
-    bonusExpiresAtTick: activeBonusExpiresAtTick,
-    status: "running"
-  };
-  const spawnResult = createSpawnResult(nextStateSeed, nextSnake, rng, {
-    ateFood: willEatFood,
-    ateBonusFood: willEatBonusFood
-  });
+  if (willEatFood || willEatBonusFood) {
+    const hitResult = applyTargetHit(nextState, movedSnake, rng, {
+      ateFood: willEatFood,
+      ateBonusFood: willEatBonusFood,
+      inherentGrowth: 1
+    });
+
+    return {
+      ...nextState,
+      ...hitResult,
+      direction,
+      pendingDirection: direction
+    };
+  }
 
   return {
-    ...state,
-    snake: spawnResult.snake,
+    ...nextState,
+    snake: movedSnake,
     direction,
-    pendingDirection: direction,
-    food: spawnResult.food,
-    bonusFood: spawnResult.bonusFood,
-    bonusExpiresAtTick: spawnResult.bonusExpiresAtTick,
-    foodsEaten: spawnResult.foodsEaten,
-    nextBonusAtFoodsEaten: spawnResult.nextBonusAtFoodsEaten,
-    tick: nextTick,
-    score: spawnResult.score,
-    status: spawnResult.status
+    pendingDirection: direction
   };
 }
 
