@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
+    <aside class="side-menu" data-menu>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav id="site-nav" class="menu-links" aria-label="Hoofdmenu">
+        <a href="./index.html" class="menu-link is-active">Home</a>
+        <a href="./over-ons.html" class="menu-link">Over ons</a>
+        <a href="./uitleg.html" class="menu-link">Uitleg</a>
+      </nav>
+    </aside>
+
     <main class="app">
       <section class="page-shell">
         <aside class="ad-rail ad-rail-left" aria-label="Advertentie links">
@@ -28,7 +41,9 @@
                     <p id="leaderboard-mode" class="leaderboard-mode">Lokale browser-opslag</p>
                   </div>
                 </div>
-                <ol id="leaderboard-list" class="leaderboard-list"></ol>
+                <div class="leaderboard-scroll">
+                  <ol id="leaderboard-list" class="leaderboard-list"></ol>
+                </div>
               </section>
             </aside>
 
@@ -96,6 +111,7 @@
     </footer>
 
     <script src="./config.js"></script>
+    <script src="./site.js"></script>
     <script type="module" src="./main.js"></script>
   </body>
 </html>
