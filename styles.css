@@ -35,9 +35,10 @@ body {
 
 .app {
   min-height: 100vh;
-  display: grid;
-  place-items: start center;
-  padding: 16px 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
 }
 
 .page-shell {
@@ -410,3 +411,4 @@ button:disabled {
     justify-items: start;
   }
 }
+
