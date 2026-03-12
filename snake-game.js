@@ -86,6 +86,83 @@ function placeBonusFood(snake, food, gridSize, rng = Math.random) {
   };
 }
 
+function extendSnake(snake, amount) {
+  if (amount <= 0 || snake.length === 0) {
+    return snake;
+  }
+
+  const nextSnake = [...snake];
+  const tail = snake[snake.length - 1];
+
+  for (let index = 0; index < amount; index += 1) {
+    nextSnake.push({ ...tail });
+  }
+
+  return nextSnake;
+}
+
+function createSpawnResult(state, snake, rng, options = {}) {
+  const ateFood = Boolean(options.ateFood);
+  const ateBonusFood = Boolean(options.ateBonusFood && state.bonusFood);
+  const bonusScore = ateBonusFood ? state.bonusFood.score : 0;
+  const growthGain = (ateFood ? 1 : 0) + bonusScore;
+  const nextSnake = extendSnake(snake, Math.max(0, growthGain - (ateFood ? 1 : 0)));
+  const nextFoodsEaten = ateFood ? state.foodsEaten + 1 : state.foodsEaten;
+  const nextScore = state.score + (ateFood ? 1 : 0) + bonusScore;
+  const nextFood = ateFood ? placeFood(nextSnake, state.gridSize, rng, [state.bonusFood]) : state.food;
+
+  let nextBonusFood = ateBonusFood ? null : state.bonusFood;
+  let nextBonusExpiresAtTick = ateBonusFood ? null : state.bonusExpiresAtTick;
+  let nextBonusAtFoodsEaten = state.nextBonusAtFoodsEaten;
+
+  if (ateFood && nextFood !== null && nextFoodsEaten >= state.nextBonusAtFoodsEaten) {
+    nextBonusFood = placeBonusFood(nextSnake, nextFood, state.gridSize, rng);
+    nextBonusExpiresAtTick = nextBonusFood ? state.tick + nextBonusFood.lifetimeTicks : null;
+    nextBonusAtFoodsEaten = nextFoodsEaten + randomBonusInterval(rng);
+  }
+
+  return {
+    snake: nextSnake,
+    food: nextFood,
+    bonusFood: nextBonusFood,
+    bonusExpiresAtTick: nextBonusExpiresAtTick,
+    foodsEaten: nextFoodsEaten,
+    nextBonusAtFoodsEaten,
+    score: nextScore,
+    status: nextFood === null ? "won" : state.status
+  };
+}
+
+function findShotTarget(state) {
+  const head = state.snake[0];
+  const vector = DIRECTION_VECTORS[state.direction];
+  const candidates = [state.food, state.bonusFood].filter(Boolean).filter((target) => {
+    if (vector.x !== 0) {
+      if (target.y !== head.y) {
+        return false;
+      }
+      return vector.x > 0 ? target.x > head.x : target.x < head.x;
+    }
+
+    if (target.x !== head.x) {
+      return false;
+    }
+    return vector.y > 0 ? target.y > head.y : target.y < head.y;
+  });
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  candidates.sort((left, right) => {
+    const leftDistance = Math.abs(left.x - head.x) + Math.abs(left.y - head.y);
+    const rightDistance = Math.abs(right.x - head.x) + Math.abs(right.y - head.y);
+    return leftDistance - rightDistance;
+  });
+
+  return candidates[0];
+}
+
 export function createInitialState(rng = Math.random, gridSize = GRID_SIZE) {
   const startX = Math.floor(gridSize / 2);
   const startY = Math.floor(gridSize / 2);
@@ -130,6 +207,29 @@ export function setDirection(state, nextDirection) {
   };
 }
 
+export function fireShot(state, rng = Math.random) {
+  if (state.status === "game-over" || state.status === "won") {
+    return state;
+  }
+
+  const target = findShotTarget(state);
+  if (!target) {
+    return state;
+  }
+
+  const ateFood = state.food && target.x === state.food.x && target.y === state.food.y;
+  const ateBonusFood = state.bonusFood && target.x === state.bonusFood.x && target.y === state.bonusFood.y;
+  const spawnResult = createSpawnResult(state, state.snake, rng, {
+    ateFood,
+    ateBonusFood
+  });
+
+  return {
+    ...state,
+    ...spawnResult
+  };
+}
+
 export function stepGame(state, rng = Math.random) {
   if (state.status !== "running") {
     return state;
@@ -169,35 +269,31 @@ export function stepGame(state, rng = Math.random) {
     };
   }
 
-  const nextFoodsEaten = willEatFood ? state.foodsEaten + 1 : state.foodsEaten;
-  const nextScore = state.score + (willEatFood ? 1 : 0) + (willEatBonusFood ? activeBonusFood.score : 0);
-  const nextFood = willEatFood ? placeFood(nextSnake, state.gridSize, rng, [activeBonusFood]) : state.food;
-
-  let nextBonusFood = willEatBonusFood ? null : activeBonusFood;
-  let nextBonusExpiresAtTick = willEatBonusFood ? null : activeBonusExpiresAtTick;
-  let nextBonusAtFoodsEaten = state.nextBonusAtFoodsEaten;
-
-  if (willEatFood && nextFood !== null && nextFoodsEaten >= state.nextBonusAtFoodsEaten) {
-    nextBonusFood = placeBonusFood(nextSnake, nextFood, state.gridSize, rng);
-    nextBonusExpiresAtTick = nextBonusFood ? nextTick + nextBonusFood.lifetimeTicks : null;
-    nextBonusAtFoodsEaten = nextFoodsEaten + randomBonusInterval(rng);
-  }
-
-  const nextStatus = nextFood === null ? "won" : "running";
+  const nextStateSeed = {
+    ...state,
+    tick: nextTick,
+    bonusFood: activeBonusFood,
+    bonusExpiresAtTick: activeBonusExpiresAtTick,
+    status: "running"
+  };
+  const spawnResult = createSpawnResult(nextStateSeed, nextSnake, rng, {
+    ateFood: willEatFood,
+    ateBonusFood: willEatBonusFood
+  });
 
   return {
     ...state,
-    snake: nextSnake,
+    snake: spawnResult.snake,
     direction,
     pendingDirection: direction,
-    food: nextFood,
-    bonusFood: nextBonusFood,
-    bonusExpiresAtTick: nextBonusExpiresAtTick,
-    foodsEaten: nextFoodsEaten,
-    nextBonusAtFoodsEaten,
+    food: spawnResult.food,
+    bonusFood: spawnResult.bonusFood,
+    bonusExpiresAtTick: spawnResult.bonusExpiresAtTick,
+    foodsEaten: spawnResult.foodsEaten,
+    nextBonusAtFoodsEaten: spawnResult.nextBonusAtFoodsEaten,
     tick: nextTick,
-    score: nextScore,
-    status: nextStatus
+    score: spawnResult.score,
+    status: spawnResult.status
   };
 }
 

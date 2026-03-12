@@ -2,6 +2,7 @@ import {
   GRID_SIZE,
   TICK_MS,
   createInitialState,
+  fireShot,
   pauseGame,
   restartGame,
   setDirection,
@@ -299,19 +300,24 @@ function renderBoard() {
     for (let x = 0; x < GRID_SIZE; x += 1) {
       const key = `${x},${y}`;
       const classes = ["cell"];
+      let content = "";
 
       if (snakeMap.has(key)) {
-        classes.push("snake");
+        classes.push("tank-cell");
         if (snakeMap.get(key) === 0) {
-          classes.push("head");
+          classes.push("tank-head", `direction-${gameState.direction}`);
+          content = '<span class="tank-icon" aria-hidden="true">&#128737;</span>';
+        } else {
+          classes.push("tank-body");
+          content = '<span class="tank-icon" aria-hidden="true">&#128998;</span>';
         }
       } else if (gameState.bonusFood && gameState.bonusFood.x === x && gameState.bonusFood.y === y) {
         classes.push("bonus", `bonus-${gameState.bonusFood.kind}`);
       } else if (gameState.food && gameState.food.x === x && gameState.food.y === y) {
-        classes.push("food");
+        classes.push("food", "target-cell");
       }
 
-      cells.push(`<div class="${classes.join(" ")}" role="gridcell" aria-label="${key}"></div>`);
+      cells.push(`<div class="${classes.join(" ")}" role="gridcell" aria-label="${key}">${content}</div>`);
     }
   }
 
@@ -374,6 +380,14 @@ function queueDirection(direction) {
   }
 }
 
+function handleShot() {
+  const nextState = fireShot(gameState);
+  if (nextState !== gameState) {
+    gameState = nextState;
+    renderBoard();
+  }
+}
+
 document.addEventListener("keydown", (event) => {
   const key = event.key.toLowerCase();
   const directionMap = {
@@ -390,6 +404,12 @@ document.addEventListener("keydown", (event) => {
   if (directionMap[key]) {
     event.preventDefault();
     queueDirection(directionMap[key]);
+    return;
+  }
+
+  if (key === "e") {
+    event.preventDefault();
+    handleShot();
     return;
   }
 

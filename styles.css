@@ -250,17 +250,41 @@ body.menu-open .menu-links {
 .cell {
   border: 1px solid #e6dcc8;
   background: #fff8ef;
+  display: grid;
+  place-items: center;
 }
 
-.cell.snake {
-  background: #2f6f3e;
+.tank-cell {
+  background: #476f3d;
 }
 
-.cell.head {
-  background: #1f4f2c;
+.tank-head {
+  background: #2c5230;
 }
 
-.cell.food {
+.tank-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+  filter: saturate(0.8);
+}
+
+.tank-head.direction-up .tank-icon {
+  transform: rotate(-90deg);
+}
+
+.tank-head.direction-down .tank-icon {
+  transform: rotate(90deg);
+}
+
+.tank-head.direction-left .tank-icon {
+  transform: scaleX(-1);
+}
+
+.tank-head.direction-right .tank-icon {
+  transform: rotate(0deg);
+}
+
+.target-cell {
   background: #b42318;
 }
 
